@@ -9,7 +9,7 @@ My Job as the ML Engineer was to build something that flags at-risk customers *b
 ---
 Try out the app here: https://urbancart-customer-churn.streamlit.app/
 
-Check the interactive dashboard here: 
+Check the interactive dashboard here: https://obinna-muonanu.github.io/TeSA-AI-Specialization-Assignment-III/
 
 ## 2. The Data
 
