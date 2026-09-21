@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>UrbanCart Churn Insights Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root {
+    --navy: #1E2761;
+    --navy-2: #2F3C7E;
+    --ice: #CADCFC;
+    --coral: #E4572E;
+    --green: #2E9E5B;
+    --amber: #E0A800;
+    --bg: #FFFFFF;
+    --card-bg: #FFFFFF;
+    --border: #E4E7F0;
+    --text: #1B2033;
+    --text-muted: #6A7083;
+    --header-bg: #14183F;
+    --shadow: 0 1px 3px rgba(20,24,63,0.08), 0 1px 2px rgba(20,24,63,0.06);
+    box-sizing: border-box;
+  }
+  /* Background stays white regardless of system/browser theme, per request. */
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Calibri, Arial, sans-serif;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+
+  header {
+    background: var(--header-bg);
+    padding: 18px clamp(14px, 3vw, 32px);
+    padding-top: calc(18px + env(safe-area-inset-top, 0px));
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 10px;
+  }
+  header .title { color: #fff; font-size: 20px; font-weight: 700; letter-spacing: 0.2px; }
+  header .title span { color: var(--coral); }
+  header .subtitle { color: #AEB4E0; font-size: 12.5px; margin-top: 2px; }
+  header .meta { color: #8890C4; font-size: 12px; text-align: right; }
+
+  main {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: clamp(12px, 2.5vw, 24px);
+  }
+
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .kpi {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 14px 16px;
+    min-width: 0;
+  }
+  .kpi .label { font-size: 11.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+  .kpi .value { font-size: 28px; font-weight: 800; margin-top: 4px; color: var(--navy-2); }
+  .kpi .value.coral { color: var(--coral); }
+  .kpi .sub { font-size: 11.5px; color: var(--text-muted); margin-top: 3px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 14px;
+  }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 16px 18px 12px;
+    min-width: 0;
+  }
+  .card h3 {
+    margin: 0 0 2px; font-size: 14px; font-weight: 700; color: var(--text);
+  }
+  .card .cardsub { font-size: 11.5px; color: var(--text-muted); margin-bottom: 10px; }
+
+  .span-3 { grid-column: span 3; }
+  .span-4 { grid-column: span 4; }
+  .span-5 { grid-column: span 5; }
+  .span-6 { grid-column: span 6; }
+  .span-7 { grid-column: span 7; }
+  .span-8 { grid-column: span 8; }
+  .span-12 { grid-column: span 12; }
+
+  .chart-wrap { position: relative; width: 100%; }
+
+  /* confusion matrix */
+  .cm-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 4px; }
+  .cm-table th, .cm-table td { padding: 8px 6px; text-align: center; border: 1px solid var(--border); }
+  .cm-table th { font-weight: 600; color: var(--text-muted); background: transparent; font-size: 11px; }
+  .cm-cell-tn { background: rgba(46,158,91,0.14); font-weight: 700; }
+  .cm-cell-tp { background: rgba(46,158,91,0.28); font-weight: 700; }
+  .cm-cell-fp { background: rgba(228,87,46,0.12); font-weight: 700; }
+  .cm-cell-fn { background: rgba(228,87,46,0.24); font-weight: 700; }
+
+  /* metric bars */
+  .metric-row { margin-bottom: 10px; }
+  .metric-row .mlabel { display:flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 3px; }
+  .metric-row .mlabel b { color: var(--text); font-weight: 700; }
+  .bar-track { height: 8px; border-radius: 5px; background: var(--border); overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 5px; background: var(--navy-2); }
+
+  /* insights list */
+  .insight-list { margin: 0; padding: 0; list-style: none; }
+  .insight-list li {
+    display: flex; gap: 10px; align-items: flex-start;
+    font-size: 12.8px; color: var(--text); padding: 7px 0;
+    border-bottom: 1px dashed var(--border);
+    line-height: 1.4;
+  }
+  .insight-list li:last-child { border-bottom: none; }
+  .dot { flex: none; width: 7px; height: 7px; border-radius: 50%; margin-top: 5px; background: var(--coral); }
+  .dot.g { background: var(--green); }
+  .dot.n { background: var(--navy-2); }
+
+  /* slicer / slider */
+  .slicer-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; margin-bottom: 4px; }
+  .slicer-row input[type=range] { flex: 1; accent-color: var(--navy-2); }
+  .readout-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+  .readout {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 6px 8px; text-align: center;
+  }
+  .readout .rlabel { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .4px; }
+  .readout .rvalue { font-size: 16px; font-weight: 800; color: var(--navy-2); }
+  .readout .rvalue.coral { color: var(--coral); }
+  .readout .rvalue.green { color: var(--green); }
+
+  footer {
+    text-align: center; color: var(--text-muted); font-size: 11px;
+    padding: 18px 0 calc(18px + env(safe-area-inset-bottom, 0px));
+  }
+
+  @media (max-width: 900px) {
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    .span-3, .span-4, .span-5, .span-6, .span-7, .span-8 { grid-column: span 12; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="title">UrbanCart <span>&middot;</span> Customer Churn Insights</div>
+    <div class="subtitle">Retention Analytics &nbsp;|&nbsp; Historical customer behavior dataset</div>
+  </div>
+  <div class="meta">20,000 customers analyzed<br>5 behavioral features</div>
+</header>
+
+<main>
+
+  <!-- KPI ROW -->
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="label">Total Customers</div>
+      <div class="value">20,000</div>
+      <div class="sub">18,433 loyal &middot; 1,567 churned</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Churn Rate</div>
+      <div class="value coral">7.8%</div>
+      <div class="sub">Severe class imbalance</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Avg. Days Since Last Order</div>
+      <div class="value coral">42.1</div>
+      <div class="sub">Churned customers</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Avg. Days Since Last Order</div>
+      <div class="value">17.8</div>
+      <div class="sub">Loyal customers &middot; 2.4x lower</div>
+    </div>
+  </div>
+
+  <!-- ROW 2: donut + % diff bar -->
+  <div class="grid" style="margin-bottom:14px;">
+    <div class="card span-4">
+      <h3>Churn Distribution</h3>
+      <div class="cardsub">Share of customers by outcome</div>
+      <div class="chart-wrap" style="height:230px;">
+        <canvas id="donutChart"></canvas>
+      </div>
+    </div>
+    <div class="card span-8">
+      <h3>What Separates Churners From Loyal Customers</h3>
+      <div class="cardsub">% difference in average feature value, churned vs. loyal customers</div>
+      <div class="chart-wrap" style="height:230px;">
+        <canvas id="diffChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 3: feature importance + ratio tradeoff -->
+  <div class="grid" style="margin-bottom:14px;">
+    <div class="card span-6">
+      <h3>Model Feature Importance</h3>
+      <div class="cardsub">Logistic Regression coefficients &mdash; direction &amp; strength of impact on churn</div>
+      <div class="chart-wrap" style="height:250px;">
+        <canvas id="importanceChart"></canvas>
+      </div>
+    </div>
+    <div class="card span-6">
+      <h3>Precision / Recall / Cost Tradeoff</h3>
+      <div class="cardsub">Drag to explore how the class-weight ratio changes outcomes</div>
+      <div class="chart-wrap" style="height:200px;">
+        <canvas id="ratioChart"></canvas>
+      </div>
+      <div class="slicer-row">
+        <span style="font-size:11px; color:var(--text-muted);">Ratio</span>
+        <input type="range" id="ratioSlider" min="0" max="23" step="1" value="11">
+        <span style="font-size:11px; color:var(--text-muted);" id="ratioVal">6.04</span>
+      </div>
+      <div class="readout-row">
+        <div class="readout"><div class="rlabel">Precision</div><div class="rvalue" id="rPrec">20%</div></div>
+        <div class="readout"><div class="rlabel">Recall</div><div class="rvalue green" id="rRec">58%</div></div>
+        <div class="readout"><div class="rlabel">Total Cost</div><div class="rvalue coral" id="rCost">$58,930</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 4: confusion matrix + metrics + insights -->
+  <div class="grid">
+    <div class="card span-4">
+      <h3>Test Confusion Matrix</h3>
+      <div class="cardsub">Final model, held-out test set (n = 3,000)</div>
+      <table class="cm-table">
+        <tr><th></th><th>Predicted&nbsp;Loyal</th><th>Predicted&nbsp;Churn</th></tr>
+        <tr><th>Actual Loyal</th><td class="cm-cell-tn">2,207</td><td class="cm-cell-fp">543</td></tr>
+        <tr><th>Actual Churn</th><td class="cm-cell-fn">98</td><td class="cm-cell-tp">152</td></tr>
+      </table>
+    </div>
+    <div class="card span-4">
+      <h3>Model Performance</h3>
+      <div class="cardsub">Test set, churn class</div>
+      <div class="metric-row">
+        <div class="mlabel"><span>Recall</span><b>61%</b></div>
+        <div class="bar-track"><div class="bar-fill" style="width:61%; background:var(--green);"></div></div>
+      </div>
+      <div class="metric-row">
+        <div class="mlabel"><span>Precision</span><b>22%</b></div>
+        <div class="bar-track"><div class="bar-fill" style="width:22%; background:var(--coral);"></div></div>
+      </div>
+      <div class="metric-row">
+        <div class="mlabel"><span>Fbeta-score</span><b>0.45</b></div>
+        <div class="bar-track"><div class="bar-fill" style="width:32%;"></div></div>
+      </div>
+      <div class="metric-row">
+        <div class="mlabel"><span>Overall accuracy</span><b>79%</b></div>
+        <div class="bar-track"><div class="bar-fill" style="width:79%;"></div></div>
+      </div>
+    </div>
+    <div class="card span-4">
+      <h3>Key Insights</h3>
+      <div class="cardsub">What the data and model tell the retention team</div>
+      <ul class="insight-list">
+        <li><span class="dot"></span>Recency of last order is the standout signal &mdash; churners go quiet 2.4x longer before leaving.</li>
+        <li><span class="dot"></span>Tenure, spend and order volume barely differ between groups on their own.</li>
+        <li><span class="dot g"></span>Support tickets run 40% higher among churners &mdash; a secondary friction signal.</li>
+        <li><span class="dot n"></span>Class weighting (not resampling) handled the 7.8% imbalance without synthetic data.</li>
+        <li><span class="dot"></span>Operating point tuned to a 20% precision floor catches 61% of churners at a manageable false-alarm rate.</li>
+      </ul>
+    </div>
+  </div>
+
+</main>
+
+<footer>UrbanCart Retention Analytics &middot; Churn Insights Dashboard</footer>
+
+<script>
+Chart.defaults.font.family = "-apple-system, 'Segoe UI', Calibri, Arial, sans-serif";
+Chart.defaults.color = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() || '#6A7083';
+
+const NAVY = "#2F3C7E", CORAL = "#E4572E", GREEN = "#2E9E5B", ICE = "#CADCFC", MUTED = "#9AA0BE";
+
+// 1. Donut
+new Chart(document.getElementById('donutChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Not Churned', 'Churned'],
+    datasets: [{
+      data: [18433, 1567],
+      backgroundColor: [NAVY, CORAL],
+      borderColor: '#ffffff',
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    cutout: '68%',
+    plugins: {
+      legend: { position: 'bottom', labels: { boxWidth: 10, padding: 14, font: { size: 11.5 } } },
+      tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.parsed.toLocaleString()} (${(ctx.parsed/20000*100).toFixed(1)}%)` } }
+    }
+  }
+});
+
+// 2. % difference bar chart
+const diffLabels = ["Days Since Last Order", "Support Tickets Filed", "Avg Order Value", "Orders Last Quarter", "Months Active"];
+const diffValues = [136.5, 40.0, -1.0, -6.0, -8.9];
+new Chart(document.getElementById('diffChart'), {
+  type: 'bar',
+  data: {
+    labels: diffLabels,
+    datasets: [{
+      data: diffValues,
+      backgroundColor: diffValues.map(v => v >= 0 ? CORAL : NAVY),
+      borderRadius: 4,
+      barThickness: 26,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: (ctx) => `${ctx.parsed.x > 0 ? '+' : ''}${ctx.parsed.x.toFixed(1)}% vs. loyal customers` } }
+    },
+    scales: {
+      x: { title: { display: true, text: '% difference (churned vs. loyal)', font: { size: 11 } }, grid: { color: '#E4E7F0' } },
+      y: { grid: { display: false }, ticks: { font: { size: 12 } } }
+    }
+  }
+});
+
+// 3. Feature importance
+const impLabels = ["SupportTicketsFiled", "recency_tenure_ratio", "DaysSinceLastOrder", "MonthsActive", "NumOrdersLastQuarter", "AvgOrderValue"];
+const impValues = [0.60, 0.48, 0.48, -0.27, -0.22, -0.05];
+new Chart(document.getElementById('importanceChart'), {
+  type: 'bar',
+  data: {
+    labels: impLabels,
+    datasets: [{
+      data: impValues,
+      backgroundColor: impValues.map(v => v >= 0 ? CORAL : NAVY),
+      borderRadius: 4,
+      barThickness: 22,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { title: { display: true, text: 'Coefficient (direction & strength)', font: { size: 11 } }, grid: { color: '#E4E7F0' } },
+      y: { grid: { display: false }, ticks: { font: { size: 11.5 } } }
+    }
+  }
+});
+
+// 4. Ratio tradeoff (interactive)
+const ratioData = [
+  {ratio:0.54, precision:0.717949, recall:0.115702, cost:107165},
+  {ratio:1.04, precision:0.568182, recall:0.206612, cost:96570},
+  {ratio:1.54, precision:0.472603, recall:0.285124, cost:87655},
+  {ratio:2.04, precision:0.396040, recall:0.330579, cost:82830},
+  {ratio:2.54, precision:0.342205, recall:0.371901, cost:78595},
+  {ratio:3.04, precision:0.315457, recall:0.413223, cost:74255},
+  {ratio:3.54, precision:0.279255, recall:0.433884, cost:72565},
+  {ratio:4.04, precision:0.251685, recall:0.462810, cost:69995},
+  {ratio:4.54, precision:0.237255, recall:0.500000, cost:66335},
+  {ratio:5.04, precision:0.220104, recall:0.524793, cost:64250},
+  {ratio:5.54, precision:0.211690, recall:0.553719, cost:61485},
+  {ratio:6.04, precision:0.200569, recall:0.582645, cost:58930},
+  {ratio:6.54, precision:0.190476, recall:0.611570, cost:56435},
+  {ratio:7.04, precision:0.183453, recall:0.632231, cost:54715},
+  {ratio:7.54, precision:0.181111, recall:0.673554, cost:50555},
+  {ratio:8.04, precision:0.171665, recall:0.685950, cost:50015},
+  {ratio:8.54, precision:0.163601, recall:0.698347, cost:49460},
+  {ratio:9.04, precision:0.160403, recall:0.723140, cost:47240},
+  {ratio:9.54, precision:0.152850, recall:0.731405, cost:47215},
+  {ratio:10.04, precision:0.148604, recall:0.747934, cost:46055},
+  {ratio:10.54, precision:0.143846, recall:0.772727, cost:44195},
+  {ratio:11.04, precision:0.139398, recall:0.785124, cost:43595},
+  {ratio:11.54, precision:0.137367, recall:0.797521, cost:42680},
+  {ratio:12.04, precision:0.133333, recall:0.809917, cost:42110},
+];
+
+const ratioChart = new Chart(document.getElementById('ratioChart'), {
+  type: 'line',
+  data: {
+    labels: ratioData.map(d => d.ratio.toFixed(2)),
+    datasets: [
+      {
+        label: 'Precision', data: ratioData.map(d => d.precision * 100),
+        borderColor: NAVY, backgroundColor: NAVY, yAxisID: 'y', tension: 0.25, pointRadius: 0, borderWidth: 2,
+      },
+      {
+        label: 'Recall', data: ratioData.map(d => d.recall * 100),
+        borderColor: GREEN, backgroundColor: GREEN, yAxisID: 'y', tension: 0.25, pointRadius: 0, borderWidth: 2,
+      },
+      {
+        label: 'Total Cost', data: ratioData.map(d => d.cost),
+        borderColor: CORAL, backgroundColor: CORAL, yAxisID: 'y1', tension: 0.25, pointRadius: 0, borderWidth: 2, borderDash: [4,3],
+      },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12, font: { size: 10.5 } } } },
+    scales: {
+      x: { title: { display: true, text: 'Class weight ratio (churn:loyal)', font: { size: 10.5 } }, grid: { display: false }, ticks: { maxTicksLimit: 7, font: { size: 10 } } },
+      y: { position: 'left', min: 0, max: 100, title: { display: true, text: '%', font: { size: 10.5 } }, grid: { color: '#E4E7F0' } },
+      y1: { position: 'right', min: 0, max: 115000, grid: { display: false }, title: { display: true, text: '$', font: { size: 10.5 } } },
+    }
+  }
+});
+
+const slider = document.getElementById('ratioSlider');
+const ratioVal = document.getElementById('ratioVal');
+const rPrec = document.getElementById('rPrec');
+const rRec = document.getElementById('rRec');
+const rCost = document.getElementById('rCost');
+
+function updateReadout(i) {
+  const d = ratioData[i];
+  ratioVal.textContent = d.ratio.toFixed(2);
+  rPrec.textContent = (d.precision * 100).toFixed(0) + '%';
+  rRec.textContent = (d.recall * 100).toFixed(0) + '%';
+  rCost.textContent = '$' + Math.round(d.cost).toLocaleString();
+}
+slider.addEventListener('input', (e) => updateReadout(parseInt(e.target.value, 10)));
+updateReadout(11);
+</script>
+</body>
+</html>
