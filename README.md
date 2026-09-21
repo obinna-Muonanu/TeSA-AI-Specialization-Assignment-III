@@ -6,6 +6,9 @@ The Retention Team noticed that customers were **going quiet** and leaving witho
 
 My Job as the ML Engineer was to build something that flags at-risk customers *before* they fully leave, using data UrbanCart already collects on every account.
 
+---
+Try out the app here: https://urbancart-customer-churn.streamlit.app/
+
 ## 2. The Data
 
 I was given records for about 20,000 customers, with five pieces of information tracked for each one:
