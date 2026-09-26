@@ -74,7 +74,7 @@ Numbers below are for identifying customers who churn, on data the model had nev
 | Recall | Of the customers who actually churned, how many the model caught | 61% |
 | Overall accuracy | (Not the right measure here, just included only for reference) | 79% |
 
-In practical terms: out of every 250 customers who actually churn, the model correctly flags around 150 of them. To do that, it also flags roughly 550 loyal customers out of 2,750 as a false alarm. That trade-off was deliberate as it reflects that catching real churners is worth some extra, low-cost false alarms.
+In practical terms: out of every 250 customers who actually churn, the model correctly flags around 150 of them. To do that, it also flags 542 loyal customers out of 2,750 as a false alarm. That trade-off was deliberate as it reflects that catching real churners is worth some extra, low-cost false alarms.
 
 ## 8. Recommendation
 
