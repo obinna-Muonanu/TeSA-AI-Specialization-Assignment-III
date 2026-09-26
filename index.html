@@ -223,13 +223,13 @@
       </div>
       <div class="slicer-row">
         <span style="font-size:11px; color:var(--text-muted);">Ratio</span>
-        <input type="range" id="ratioSlider" min="0" max="23" step="1" value="11">
-        <span style="font-size:11px; color:var(--text-muted);" id="ratioVal">6.04</span>
+        <input type="range" id="ratioSlider" min="0" max="23" step="1" value="10">
+        <span style="font-size:11px; color:var(--text-muted);" id="ratioVal">5.54</span>
       </div>
       <div class="readout-row">
-        <div class="readout"><div class="rlabel">Precision</div><div class="rvalue" id="rPrec">22%</div></div>
-        <div class="readout"><div class="rlabel">Recall</div><div class="rvalue green" id="rRec">61%</div></div>
-        <div class="readout"><div class="rlabel">Total Cost</div><div class="rvalue coral" id="rCost">$58,930</div></div>
+        <div class="readout"><div class="rlabel">Precision</div><div class="rvalue" id="rPrec">23%</div></div>
+        <div class="readout"><div class="rlabel">Recall</div><div class="rvalue green" id="rRec">60%</div></div>
+        <div class="readout"><div class="rlabel">Total Cost</div><div class="rvalue coral" id="rCost">$57,400</div></div>
       </div>
     </div>
   </div>
@@ -249,12 +249,12 @@
       <h3>Model Performance</h3>
       <div class="cardsub">Test set, churn class</div>
       <div class="metric-row">
-        <div class="mlabel"><span>Recall</span><b>61%</b></div>
-        <div class="bar-track"><div class="bar-fill" style="width:61%; background:var(--green);"></div></div>
+        <div class="mlabel"><span>Recall</span><b>60%</b></div>
+        <div class="bar-track"><div class="bar-fill" style="width:60%; background:var(--green);"></div></div>
       </div>
       <div class="metric-row">
-        <div class="mlabel"><span>Precision</span><b>22%</b></div>
-        <div class="bar-track"><div class="bar-fill" style="width:22%; background:var(--coral);"></div></div>
+        <div class="mlabel"><span>Precision</span><b>23%</b></div>
+        <div class="bar-track"><div class="bar-fill" style="width:23%; background:var(--coral);"></div></div>
       </div>
       <div class="metric-row">
         <div class="mlabel"><span>Fbeta-score</span><b>0.45</b></div>
@@ -273,7 +273,7 @@
         <li><span class="dot"></span>Tenure, spend and order volume barely differ between groups on their own.</li>
         <li><span class="dot g"></span>Support tickets run 40% higher among churners.</li>
         <li><span class="dot n"></span>Class weighting (not resampling) handled the 7.8% imbalance without synthetic data.</li>
-        <li><span class="dot"></span>Operating point tuned to a 20% precision floor catches 61% of churners at a manageable false-alarm rate.</li>
+        <li><span class="dot"></span>Operating point tuned to a 23% precision floor catches 60% of churners at a manageable false-alarm rate.</li>
       </ul>
     </div>
   </div>
@@ -365,30 +365,30 @@ new Chart(document.getElementById('importanceChart'), {
 
 // 4. Ratio tradeoff (interactive)
 const ratioData = [
-  {ratio:0.54, precision:0.717949, recall:0.115702, cost:107165},
-  {ratio:1.04, precision:0.568182, recall:0.206612, cost:96570},
-  {ratio:1.54, precision:0.472603, recall:0.285124, cost:87655},
-  {ratio:2.04, precision:0.396040, recall:0.330579, cost:82830},
-  {ratio:2.54, precision:0.342205, recall:0.371901, cost:78595},
-  {ratio:3.04, precision:0.315457, recall:0.413223, cost:74255},
-  {ratio:3.54, precision:0.279255, recall:0.433884, cost:72565},
-  {ratio:4.04, precision:0.251685, recall:0.462810, cost:69995},
-  {ratio:4.54, precision:0.237255, recall:0.500000, cost:66335},
-  {ratio:5.04, precision:0.220104, recall:0.524793, cost:64250},
-  {ratio:5.54, precision:0.211690, recall:0.553719, cost:61485},
-  {ratio:6.04, precision:0.200569, recall:0.582645, cost:58930},
-  {ratio:6.54, precision:0.190476, recall:0.611570, cost:56435},
-  {ratio:7.04, precision:0.183453, recall:0.632231, cost:54715},
-  {ratio:7.54, precision:0.181111, recall:0.673554, cost:50555},
-  {ratio:8.04, precision:0.171665, recall:0.685950, cost:50015},
-  {ratio:8.54, precision:0.163601, recall:0.698347, cost:49460},
-  {ratio:9.04, precision:0.160403, recall:0.723140, cost:47240},
-  {ratio:9.54, precision:0.152850, recall:0.731405, cost:47215},
-  {ratio:10.04, precision:0.148604, recall:0.747934, cost:46055},
-  {ratio:10.54, precision:0.143846, recall:0.772727, cost:44195},
-  {ratio:11.04, precision:0.139398, recall:0.785124, cost:43595},
-  {ratio:11.54, precision:0.137367, recall:0.797521, cost:42680},
-  {ratio:12.04, precision:0.133333, recall:0.809917, cost:42110},
+  {ratio: 0.54,  precision: 0.744186, recall: 0.128, cost: 109165}, // Index 0 (Old Row 0)
+  {ratio: 1.04,  precision: 0.586207, recall: 0.204, cost: 100040},
+  {ratio: 1.54,  precision: 0.528169, recall: 0.300, cost: 88505},
+  {ratio: 2.04,  precision: 0.452632, recall: 0.344, cost: 83560},
+  {ratio: 2.54,  precision: 0.390152, recall: 0.412, cost: 75915},
+  {ratio: 3.04,  precision: 0.345133, recall: 0.468, cost: 69830},
+  {ratio: 3.54,  precision: 0.306533, recall: 0.488, cost: 68140},
+  {ratio: 4.04,  precision: 0.278132, recall: 0.524, cost: 64600},
+  {ratio: 4.54,  precision: 0.266541, recall: 0.564, cost: 60320},
+  {ratio: 5.04,  precision: 0.250000, recall: 0.584, cost: 58570},
+  {ratio: 5.54,  precision: 0.232198, recall: 0.600, cost: 57440}, // Index 10 (Chosen Model!)
+  {ratio: 6.04,  precision: 0.218705, recall: 0.608, cost: 57145}, 
+  {ratio: 6.54,  precision: 0.203412, recall: 0.620, cost: 56605}, 
+  {ratio: 7.04,  precision: 0.196195, recall: 0.660, cost: 52640},
+  {ratio: 7.54,  precision: 0.189462, recall: 0.676, cost: 51345},
+  {ratio: 8.04,  precision: 0.186243, recall: 0.704, cost: 48535},
+  {ratio: 8.54,  precision: 0.175716, recall: 0.712, cost: 48525},
+  {ratio: 9.04,  precision: 0.167598, recall: 0.720, cost: 48410},
+  {ratio: 9.54,  precision: 0.164921, recall: 0.756, cost: 44855},
+  {ratio: 10.04, precision: 0.159504, recall: 0.772, cost: 43755},
+  {ratio: 10.54, precision: 0.153666, recall: 0.788, cost: 42775},
+  {ratio: 11.04, precision: 0.149399, recall: 0.796, cost: 42495},
+  {ratio: 11.54, precision: 0.145219, recall: 0.808, cost: 41835},
+  {ratio: 12.04, precision: 0.140903, recall: 0.824, cost: 40840}  
 ];
 
 const ratioChart = new Chart(document.getElementById('ratioChart'), {
